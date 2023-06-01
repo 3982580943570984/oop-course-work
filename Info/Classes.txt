@@ -1,0 +1,148 @@
+Для сохранения объектов классов `Income` и `Expense` в базу данных, вам необходимо установить связь с объектами классов `Driver`, `Transport` и `Route`, которые также будут храниться в базе данных.
+
+Наиболее распространенным подходом для установления связи между объектами в базе данных является использование внешних ключей. В вашем случае, вы можете добавить в классы `Income` и `Expense` дополнительные свойства, которые будут ссылаться на соответствующие объекты `Driver`, `Transport` и `Route`.
+
+Например, вы можете добавить свойства `DriverId`, `TransportId` и `RouteId` в классы `Income` и `Expense`, которые будут содержать идентификаторы соответствующих объектов. Затем вы можете добавить соответствующие свойства навигации в классы `Income` и `Expense`, которые будут ссылаться на соответствующие объекты `Driver`, `Transport` и `Route`.
+
+Вот пример кода на языке C#, который показывает, как добавитьсвойства и связать классы `Income` и `Expense` с классами `Driver`, `Transport` и `Route`:
+
+```csharp
+public class Income
+{
+    public int Id { get; set; }
+    public string Description { get; set; }
+    public decimal Amount { get; set; }
+    public DateTime Date { get; set; }
+
+    public int DriverId { get; set; }
+    public int TransportId { get; set; }
+    public int RouteId { get; set; }
+
+    public virtual Driver Driver { get; set; }
+    public virtual Transport Transport { get; set; }
+    public virtual Route Route { get; set; }
+}
+
+public class Expense
+{
+    public int Id { get; set; }
+    public string Description { get; set; }
+    public decimal Amount { get; set; }
+    public DateTime Date { get; set; }
+
+    public int DriverId { get; set; }
+    public int TransportId { get; set; }
+    public int RouteId { get; set; }
+
+    public virtual Driver Driver { get; set; }
+    public virtual Transport Transport { get; set; }
+    public virtual Route Route { get; set; }
+}
+
+public class Driver
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+public class Transport
+{
+    public int Id { get; set; }
+public string Model { get; set; }
+}
+
+public class Route
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+```
+
+Здесь мы добавили свойства `DriverId`, `TransportId` и `RouteId` в классы `Income` и `Expense`, которые будут содержать идентификаторы соответствующих объектов. Затем мы добавили свойства навигации `Driver`, `Transport` и `Route` в классы `Income` и `Expense`, которые будут ссылаться на соответствующие объекты.
+
+Чтобы связать эти классы с базой данных, вы можете использовать систему ORM (Object-Relational Mapping), такую как Entity Framework. С помощью Entity Framework вы можете создать соответствующие таблицы в базе данных и настроить связи между таблицами и объектами.
+
+Например, если вы используете Code First подход в Entity Framework, то вы можете создать класс контекста данных, который наследуется от класса `DbContext`, и добавить наборы данных для каждого из классов:
+
+```csharp
+public class MyDbContext : DbContext
+{
+    public DbSet<Income> Incomes { get; set; }
+    public DbSet<Expense> Expenses { get; set; }
+    public DbSet<Driver> Drivers { get; set; }
+    public DbSet<Transport> Transports { get; set; }
+    public DbSet<Route> Routes { get; set; }
+
+    protected override void OnModelCreating(DbModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Income>()
+            .HasRequired(i => i.Driver)
+            .WithMany()
+            .HasForeignKey(i => i.DriverId);
+
+        modelBuilder.Entity<Income>()
+            .HasRequired(i => i.Transport)
+            .WithMany()
+            .HasForeignKey(i => i.TransportId);
+
+        modelBuilder.Entity<Income>()
+            .HasRequired(i => i.Route)
+            .WithMany()
+            .HasForeignKey(i => i.RouteId);
+
+        modelBuilder.Entity<Expense>()
+            .HasRequired(e => e.Driver)
+            .WithMany()
+            .HasForeignKey(e => e.DriverId);
+
+        modelBuilder.Entity<Expense>()
+            .HasRequired(e => e.Transport)
+            .WithMany()
+            .HasForeignKey(e => e.TransportId);
+
+        modelBuilder.Entity<Expense>()
+            .HasRequired(e => e.Route)
+            .WithMany()
+            .HasForeignKey(e => e.RouteId);
+    }
+}
+```
+
+Здесь мы добавили наборы данных для каждого из классов и определили связи между объектами с помощью методов `HasRequired` и `WithMany` в методе `OnModelCreating`. Эти методы указывают, что свойства `Driver`, `Transport` и `Route` являются обязательными для объектов `Income` и `Expense` и имеют один ко многим отношения с объектами классов `Driver`, `Transport` и `Route`.
+
+После этого вы можете использовать контекст данных `MyDbContext` для сохранения и получения объектов из базы данных:
+
+```csharp
+using (var context = new MyDbContext())
+{
+    var driver = new Driver { Name = "John" };
+    var transport = new Transport { Model = "Honda" };
+    var route = new Route { Name = "Route 1" };
+
+    var income = new Income
+    {
+        Description = "Salary",
+        Amount = 1000,
+        Date = DateTime.Now,
+        Driver = driver,
+        Transport = transport,
+        Route = route
+    };
+
+    context.Incomes.Add(income);
+    context.SaveChanges();
+
+    var expenses = context.Expenses
+        .Include(e => e.Driver)
+        .Include(e => e.Transport)
+        .Include(e => e.Route)
+        .ToList();
+}
+```
+
+Здесь мы создали новые объекты классов `Driver`, `Transport` и `Route`, а затем создали новый объект `Income`, который ссылается на эти объекты. Мы добавили этот объект в контекст данных `MyDbContext` и вызвали метод `SaveChanges()` для сохранения изменений в базе данных.
+
+Затем мы получили все объекты класса `Expense` из базы данных с помощью метода `ToList()`, который позволяет выполнить запрос к базе данных и получить результаты в виде списка объектов. Мы также использовали метод `Include()` для включения связанных объектов `Driver`, `Transport` и `Route` в результаты запроса.
+
+Надеюсь, это помогает вам установить связи между классами `Income` и `Expense` и классами `Driver`, `Transport` и `Route` для сохранения объектов в базу данных.

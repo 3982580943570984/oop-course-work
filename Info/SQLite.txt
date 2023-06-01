@@ -1,0 +1,114 @@
+Entity Framework Core поддерживает несколько атрибутов, которые могут использоваться для настройки модели данных при работе с SQLite.
+
+1. `[Table("TableName")]` - этот атрибут позволяет задать имя таблицы базы данных, которой соответствует класс модели данных. Например:
+
+```csharp
+[Table("Routes")]
+public class Route
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string StartLocation { get; set; }
+    public string EndLocation { get; set; }
+    public List<Bus> Buses { get; set; }
+
+    public Route()
+    {
+        Buses = new List<Bus>();
+    }
+}
+```
+
+2. `[Key]` - этот атрибут позволяет задать свойство модели данных, которое является первичным ключом таблицы базы данных. Например:
+
+```csharp
+public class Route
+{
+    [Key]
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string StartLocation { get; set; }
+    public string EndLocation { get; set; }
+    public List<Bus> Buses { get; set; }
+
+    public Route()
+    {
+        Buses = new List<Bus>();
+    }
+}
+```
+
+3. `[Required]` - этот атрибут позволяет задать свойство модели данных, которое не может иметь значение `null`. Например:
+
+```csharp
+public class Bus
+{
+    [Key]
+    public int Id { get; set; }
+    public string Model { get; set; }
+    public int Seats { get; set; }
+    [Required]
+    public string RegistrationNumber { get; set; }
+}
+```
+
+4. `[MaxLength(length)]` - этот атрибут позволяет задать максимальную длину строки для свойства модели данных. Например:
+
+```csharp
+public class Route
+{
+    [Key]
+    public int Id { get; set; }
+    [MaxLength(100)]
+    public string Name { get; set; }
+    public string StartLocation { get; set; }
+    public string EndLocation { get; set; }
+    public List<Bus> Buses { get; set; }
+
+    public Route()
+    {
+        Buses = new List<Bus>();
+    }
+}
+```
+
+5. `[ForeignKey("PropertyName")]` - этот атрибут позволяет задать свойство модели данных, которое является внешним ключомдля связи с другой таблицей. Например:
+
+```csharp
+public class Bus
+{
+    [Key]
+    public int Id { get; set; }
+    public string Model { get; set; }
+    public int Seats { get; set; }
+    [Required]
+    public string RegistrationNumber { get; set; }
+    [ForeignKey("Route")]
+    public int RouteId { get; set; }
+    public Route Route { get; set; }
+}
+```
+
+В этом примере мы определяем свойство `RouteId` как внешний ключ для связи с таблицей маршрутов. Мы также определяем свойство `Route` для доступа к связанному объекту маршрута.
+
+6. `[Column("ColumnName")]` - этот атрибут позволяет задать имя столбца базы данных, которому соответствует свойство модели данных. Например:
+
+```csharp
+public class Bus
+{
+    [Key]
+    public int Id { get; set; }
+    public string Model { get; set; }
+    public int Seats { get; set; }
+    [Required]
+    [Column("RegNumber")]
+    public string RegistrationNumber { get; set; }
+    [ForeignKey("Route")]
+    publicint RouteId { get; set; }
+    public Route Route { get; set; }
+}
+```
+
+В этом примере мы задаем имя столбца в базе данных для свойства `RegistrationNumber` с помощью атрибута `[Column]`.
+
+Это не полный список атрибутов, поддерживаемых Entity Framework Core для работы с SQLite. Но наиболее часто используемые атрибуты перечислены выше.

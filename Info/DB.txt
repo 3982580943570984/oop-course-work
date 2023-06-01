@@ -1,0 +1,61 @@
+Хорошо, я помогу вам создать три связи между классами с помощью Fluent API.
+
+1. Связь один-ко-многим между Route и Transport:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Route>()
+        .HasMany(r => r.Transports)
+        .WithOne(t => t.Route)
+        .HasForeignKey(t => t.RouteId);
+}
+```
+
+В этом примере мы указываем, что каждый Route может иметь множество связанных сущностей Transport, используя метод HasMany. 
+Затем мы указываем, что каждая сущность Transport может быть связана только с одной сущностью Route, используя метод WithOne. 
+И, наконец, мы указываем, что внешний ключ для связи находится в свойстве RouteId в сущности Transport, используя метод HasForeignKey.
+
+2. Связь один-к-одному между Transport и Driver:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Transport>()
+        .HasOne(t => t.Driver)
+        .WithOne(d => d.Transport)
+        .HasForeignKey<Driver>(d => d.TransportId);
+
+    modelBuilder.Entity<Driver>()
+        .HasOne(d => d.Transport)
+        .WithOne(t => t.Driver)
+        .HasForeignKey<Transport>(t => t.DriverId);
+}
+```
+
+В этом примере мы указываем, что каждая сущность Transport может быть связана только с одной сущностью Driver, используя метод HasOne. 
+Затем мы указываем, что каждая сущность Driver может быть связана только с одной сущностью Transport, используя метод WithOne. 
+И, наконец, мы указываем, что внешний ключ для связи находится в свойстве TransportId в сущности Driver и в свойстве DriverId в сущности Transport, используя метод HasForeignKey.
+
+3. Связь многие-ко-многим между Driver и Route:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Driver>()
+        .HasMany(d => d.Routes)
+        .WithMany(r => r.Drivers)
+        .UsingEntity(j => j.ToTable("DriverRoute"));
+
+    modelBuilder.Entity<Route>()
+        .HasMany(r => r.Drivers)
+        .WithMany(d => d.Routes)
+        .UsingEntity(j => j.ToTable("DriverRoute"));
+}
+```
+
+В этом примере мы указываем, что каждая сущность Driver может быть связана с множеством сущностей Route, используя метод HasMany. 
+Затем мы указываем, что каждая сущность Route может быть связана с множеством сущностей Driver, используя метод WithMany. 
+И, наконец, мы указываем, что связь между сущностями Driver и Route будет храниться в отдельной таблице DriverRoute с помощью метода UsingEntity.
+
+Теперь все три связи между классами были настроены с помощью Fluent API в методе OnModelCreating класса AutoParkContext.
